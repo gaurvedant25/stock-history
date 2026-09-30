@@ -1,14 +1,14 @@
 <div align="center">
 
-# Stock History
+# Stock History — Claude Skill for Stock Market Research
 
 ### The price tells you what happened. The research explains why.
 
-A Claude skill for evidence-backed stock research across Indian and US markets.
+An open-source **Claude skill for stock analysis** across **Indian NSE/BSE and US markets**. Explore stock price history, understand major price moves, compare market benchmarks, and build interactive research reports with linked news, financials, and exchange filings.
 
 **NSE / BSE / US** · **Interactive reports** · **Python standard library** · **MIT licensed**
 
-[Explore the Reliance example](https://claude.ai/artifact/JBhbUXhdqYytrnU86iHLPV) · [Install](#installation) · [How it works](#how-it-works)
+[Live Reliance report](https://claude.ai/artifact/JBhbUXhdqYytrnU86iHLPV) · [Watch the 20-second demo](docs/demo/stock-history-demo.mp4) · [Install](#installation) · [Example prompts](#stock-analysis-example-prompts)
 
 </div>
 
@@ -18,7 +18,7 @@ A Claude skill for evidence-backed stock research across Indian and US markets.
 
 Ask about a stock, share a watchlist, or upload a broker screenshot. Stock History resolves the company, compares its price moves with the market, and researches the news and filings behind the changes. The result is an interactive report with the chart and its evidence together.
 
-## See the story behind the chart
+## Interactive stock charts with news-backed explanations
 
 ![Reliance price chart with numbered event pins, a shaded multi-day decline, and a sourced explanation for a selected move](docs/images/reliance-move-detail.jpg)
 
@@ -65,7 +65,11 @@ See Claude’s official [installation guide](https://support.claude.com/en/artic
 
 Copy the `stock-history/` folder into `~/.claude/skills/` for personal use or `.claude/skills/` inside a project. The instructions resolve bundled resources relative to `SKILL.md`, supporting local and cloud installation paths.
 
-## Try it
+## Stock analysis example prompts
+
+Start with a company name, ticker, watchlist, or holdings screenshot. These prompts work as starting points after installing the skill:
+
+> Explain Reliance's stock price history over the last three months. Compare it with the NIFTY 50 and research the biggest moves.
 
 > What happened to Suzlon over the last three months? Explain the biggest moves.
 
@@ -92,6 +96,42 @@ The skill resolves the ticker, retrieves prices and financials, compares unusual
 **Requirements:** Python 3, outbound network access, and an agent with search or browsing for news research. The helpers require no third-party Python packages. For US filings, configure your own contact email through the `SEC_CONTACT` environment variable; keep it outside the repository.
 
 Public endpoints can change, reject requests, or return incomplete data. The current report embeds its chart logic and data and loads fonts from Google Fonts; the older optional builder also loads Chart.js from a CDN.
+
+## Watch the prompt-to-report demo
+
+[![Stock History demo: interactive Reliance price chart, explanations, benchmark comparison, and source links](docs/images/stock-history-demo.jpg)](docs/demo/stock-history-demo.mp4)
+
+**[Watch the 20-second video](docs/demo/stock-history-demo.mp4)** — from one prompt to price history, major-move explanations, financials, and portfolio features. This is an edited walkthrough; report generation time depends on the research and data sources.
+
+## Frequently asked questions
+
+### What is Stock History?
+
+Stock History is a reusable Claude skill for evidence-backed equity research. It combines Python data helpers with a research workflow and an interactive HTML report. Use it to understand past stock performance and the reported events behind unusual moves.
+
+### Does it support Indian and US stocks?
+
+Yes. The workflow covers listed Indian companies on the NSE and BSE and US-listed stocks. Financials, ownership, filings, and historical coverage depend on the company and source availability.
+
+### Can it explain why a stock fell or jumped?
+
+It identifies unusual sessions and sustained swings, compares them with the market, and researches dated news and filings. Explanations link to evidence; when a catalyst cannot be established, the report says so.
+
+### Can I analyze a portfolio or broker screenshot?
+
+Yes. Provide a watchlist or holdings screenshot to identify the companies and build a searchable multi-stock report. Keep personal account information out of public issues and contributions.
+
+### Is it a live trading tool or stock prediction service?
+
+No. It focuses on historical prices, financial context, and sourced research. It does not place trades, predict returns, or provide investment recommendations. Data may be delayed or incomplete.
+
+### Is Stock History free and open source?
+
+The repository is MIT licensed. Using it still requires a compatible Claude environment, Python 3, network access, and browsing or search for news research. Account and data-provider restrictions may apply.
+
+## Feedback and contributions
+
+Found a data-source issue or have a report improvement? [Open an issue](https://github.com/gaurvedant25/stock-history/issues) with the public ticker, relevant dates, and steps to reproduce it. If the skill helps your research, a GitHub star is a useful way to bookmark it and support the project.
 
 <details>
 <summary><strong>Repository structure and development</strong></summary>

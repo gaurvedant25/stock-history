@@ -1,0 +1,670 @@
+<title>__TITLE__</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --ground:#0d1117; --surface:#151b23; --raised:#1a212b;
+  --ink:#e6eaef; --lede:#c9d1da; --body:#b4bec9; --muted:#93a0ae;
+  --line:#252d38; --line-strong:#333d4a; --grid:#1f2630;
+  --accent:#7aaede; --accent-soft:#18242f;
+  --up:#3fbf83; --down:#ff6f61; --pin-empty:#5a6573; --on-pin:#0d1117; --bench:#6e7b8a;
+  --sans: Geist, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: Newsreader, Georgia, "Times New Roman", serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:var(--accent)} a:hover{color:#a9cbec}
+button,input{font-family:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:28px 36px;display:flex;flex-direction:column;gap:30px}
+@media (min-width:700px){.wrap{padding-inline:32px}}
+
+.bar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.bar[hidden]{display:none}
+.brand{font-size:13px;color:var(--muted)}
+.brand b{color:var(--ink);font-weight:600}
+.search{position:relative;width:min(380px,100%)}
+.search input{width:100%;height:44px;padding:0 14px 0 40px;border-radius:10px;border:1px solid var(--line-strong);
+  background:var(--surface);font-size:15px;color:var(--ink)}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{outline:none;border-color:var(--accent)}
+.search svg{position:absolute;left:13px;top:13px;width:18px;height:18px;pointer-events:none}
+.results{position:absolute;z-index:5;top:calc(100% + 6px);left:0;right:0;max-height:380px;overflow-y:auto;margin:0;padding:6px;
+  list-style:none;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+.results li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:9px 10px;border-radius:8px;cursor:pointer}
+.results li[aria-selected="true"]{background:var(--raised)}
+.results .nm{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.results .id{grid-column:1;font-size:12px;color:var(--muted)}
+.results .wt{grid-row:1 / span 2;grid-column:2;align-self:center;font-size:12px;color:var(--muted);text-align:right}
+.results .cur{color:var(--accent)}
+.results .empty{display:block;color:var(--muted);cursor:default;font-size:14px}
+
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+.eyebrow{font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{margin:6px 0 0;font-family:var(--serif);font-weight:500;font-size:46px;line-height:1.05;letter-spacing:-.01em;text-wrap:balance}
+.price-row{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:14px;row-gap:2px;margin-top:14px}
+.price{font-size:34px;font-weight:500;letter-spacing:-.02em}
+.chg{font-size:17px;font-weight:500}
+.over{font-size:14px;color:var(--muted)}
+.seg{display:flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.seg button{min-width:56px;height:44px;padding:0 16px;border:0;border-radius:9px;background:transparent;
+  color:var(--muted);font-size:14px;font-weight:500;cursor:pointer}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--line);color:var(--ink)}
+.verdict{margin:-6px 0 0;max-width:780px;font-family:var(--serif);font-size:23px;line-height:1.4;color:var(--lede);text-wrap:pretty}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px}
+.chart-card{padding:18px 20px 14px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.chart-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.caption{flex:1 1 320px;font-size:13px;color:var(--muted)}
+.cmp{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--line);
+  background:var(--surface);color:var(--body);font-size:13px;font-weight:500;cursor:pointer}
+.cmp[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.cmp .dash{width:16px;border-top:2px dashed var(--bench)}
+.chart{position:relative;padding-right:56px;padding-bottom:26px}
+.plot{position:relative;height:250px}
+.plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.gl{position:absolute;left:0;right:0;height:1px;background:var(--grid)}
+.yl{position:absolute;left:calc(100% + 8px);transform:translateY(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.xl{position:absolute;top:calc(100% + 8px);font-size:11px;color:var(--muted);white-space:nowrap}
+.pin{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;padding:0;border-radius:50%;border:1.5px solid var(--pin-empty);
+  background:var(--surface);color:var(--muted);font-size:11px;font-weight:600;line-height:21px;text-align:center;cursor:pointer;
+  box-shadow:0 0 0 3px var(--surface)}
+.pin.up,.mini.up{background:var(--up);border-color:var(--up);color:var(--on-pin)}
+.pin.down,.mini.down{background:var(--down);border-color:var(--down);color:var(--on-pin)}
+.pin{z-index:2}
+.plot{cursor:crosshair;touch-action:pan-y;outline:none}
+.plot:focus-visible{outline:2px solid var(--accent);outline-offset:6px;border-radius:4px}
+.band{position:absolute;top:0;bottom:0;pointer-events:none;border-inline:1px dashed transparent}
+.band.up{background:rgba(63,191,131,.08);border-color:rgba(63,191,131,.25)}
+.band.down{background:rgba(255,111,97,.08);border-color:rgba(255,111,97,.25)}
+.band.on.up{background:rgba(63,191,131,.16);border-color:var(--up);border-style:solid}
+.band.on.down{background:rgba(255,111,97,.16);border-color:var(--down);border-style:solid}
+.band-l{position:absolute;top:4px;z-index:2;margin-left:4px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;
+  white-space:nowrap;cursor:pointer;background:var(--surface);border:1px solid}
+.band-l.up{color:var(--up);border-color:rgba(63,191,131,.5)} .band-l.down{color:var(--down);border-color:rgba(255,111,97,.5)}
+.band-l:hover,.band-l[aria-pressed="true"]{background:var(--raised)}
+.band-l.flip{transform:translateX(calc(-100% - 8px))}
+.key{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.key span{display:flex;align-items:center;gap:8px}
+.key i{flex:none;display:inline-block}
+.key .k-pin{width:16px;height:16px;border-radius:50%;background:var(--up)}
+.key .k-band{width:16px;height:12px;border-radius:2px;background:rgba(63,191,131,.22);border:1px dashed rgba(63,191,131,.6)}
+.day .back{align-self:flex-start;height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);
+  color:var(--body);font-size:13px;cursor:pointer}
+.linkish{padding:0;border:0;background:none;color:var(--accent);font-size:14px;cursor:pointer;text-decoration:underline}
+.guide{position:absolute;top:0;bottom:0;width:1px;margin-left:-.5px;background:var(--muted);opacity:.55;pointer-events:none;z-index:1}
+.sdot{position:absolute;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:var(--ink);
+  box-shadow:0 0 0 3px var(--surface);pointer-events:none;z-index:1}
+.tip{position:absolute;top:6px;z-index:3;width:max-content;max-width:280px;padding:10px 12px;border-radius:10px;pointer-events:none;
+  background:var(--raised);border:1px solid var(--line-strong);box-shadow:0 10px 28px rgba(0,0,0,.5);font-size:13px;line-height:1.45}
+.tip .th{font-weight:600} .tip .tm{color:var(--muted);font-size:12px}
+.tip ul{margin:6px 0 0;padding:0 0 0 16px;color:var(--body)} .tip li{margin-top:2px}
+.tip .hint{margin-top:6px;font-size:11px;color:var(--muted)}
+.day{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:12px}
+.day-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px}
+.day-h .dd{font-size:16px;font-weight:600}
+.day-h .dc{font-size:15px}
+.day-nav{margin-left:auto;display:flex;gap:6px;align-self:center}
+.day-nav button{width:44px;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--body);
+  font-size:18px;line-height:1;cursor:pointer}
+.day-nav button:hover:not(:disabled){border-color:var(--line-strong);color:var(--ink)}
+.day-nav button:disabled{opacity:.35;cursor:default}
+.day p{margin:0;color:var(--body);font-size:14px}
+.day ul{margin:0;padding-left:18px;color:var(--body);font-size:14px}
+.day li+li{margin-top:4px}
+.lab{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.quiet{color:var(--muted)}
+.sw{padding:16px 0;border-top:1px solid var(--line)}
+.list .sw:first-child{border-top:0}
+.sw-h{display:flex;gap:12px;align-items:baseline;margin-bottom:4px}
+.sw-h b{font-weight:600} .sw-h span{color:var(--muted);font-size:14px}
+.sw p{margin:0;color:var(--body)}
+.sw p+p,.swb p+p{margin-top:8px}
+.sw-t{font-weight:600;color:var(--ink)!important}
+.sw-m{font-size:13px;color:var(--muted)!important}
+.sw-f{margin-top:12px}
+.sw-f ul{margin:0;padding-left:18px;color:var(--body);font-size:14px}
+.sw-f li+li{margin-top:4px}
+.glance{padding:16px 22px 6px;display:flex;flex-direction:column}
+.glance h2{margin:0 0 4px;font-size:13px;font-weight:500;color:var(--muted)}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.kv:first-of-type{border-top:0}
+.kv .k{font-size:14px;color:var(--muted)}
+.kv .v{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.kv .v b{font-size:17px;font-weight:500}
+.kv .v small{font-size:12px;color:var(--muted)}
+
+.tabs-wrap{overflow-x:auto;margin-bottom:-8px;scrollbar-width:none}
+.tabs{display:flex;gap:30px;border-bottom:1px solid var(--line);min-width:max-content}
+.tabs button{display:flex;align-items:center;gap:8px;height:48px;padding:0;margin-bottom:-1px;border:0;
+  border-bottom:2px solid transparent;background:transparent;color:var(--muted);font-size:15px;font-weight:500;cursor:pointer}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.count{font-size:12px;padding:2px 8px;border-radius:10px;background:var(--raised);color:var(--muted)}
+
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:56px}
+.sec{margin:0 0 12px;font-family:var(--serif);font-weight:500;font-size:24px;line-height:1.2}
+.things{margin:0;padding:0;list-style:none}
+.things li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;padding:16px 0;border-top:1px solid var(--line)}
+.things .n{font-family:var(--serif);font-size:20px;line-height:1.2;color:var(--accent)}
+.things strong{display:block;font-size:16px;font-weight:600;margin-bottom:4px}
+.things span{color:var(--body)}
+.more{align-self:flex-start;height:44px;margin-top:6px;padding:0;border:0;background:transparent;color:var(--accent);
+  font-size:15px;font-weight:500;cursor:pointer}
+.col{display:flex;flex-direction:column}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:13px;color:var(--muted);margin-bottom:14px}
+.legend span{display:flex;align-items:center;gap:8px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--muted)}
+.dot.none{background:var(--surface);border:1.5px solid var(--pin-empty)}
+.list{padding:2px 22px}
+.mv-item{border-top:1px solid var(--line)}
+.list .mv-item:first-child{border-top:0}
+.mv{display:grid;grid-template-columns:24px minmax(0,1fr) 16px;align-items:center;gap:14px;width:100%;min-height:52px;
+  padding:9px 0;border:0;background:transparent;text-align:left;cursor:pointer;color:var(--ink)}
+.top-moves .mv{min-height:60px}
+.mini{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--pin-empty);background:var(--surface);color:var(--muted);
+  font-size:11px;font-weight:600;line-height:21px;text-align:center}
+.mv-body{display:grid;grid-template-columns:104px 76px minmax(0,1fr);gap:14px;align-items:center}
+.mv-date{font-size:14px;color:var(--muted)}
+.mv-chg{font-size:15px;font-weight:600}
+.mv-title{font-size:15px}
+.none-t{color:var(--muted)}
+.chev{width:16px;height:16px;transition:transform .15s ease-out}
+.mv[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.detail{padding:0 0 18px 38px;max-width:740px;display:flex;flex-direction:column;gap:12px}
+.detail p{margin:0;color:var(--body)}
+.detail p.deal{font-size:13px;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-size:12px;padding:4px 10px;border-radius:6px;background:var(--raised);color:var(--body);text-decoration:none}
+a.tag{background:var(--accent-soft);color:var(--accent)}
+.up-t{color:var(--up)} .down-t{color:var(--down)}
+
+.fin{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:48px}
+.fin-main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.fin .seg{align-self:flex-start}
+.tscroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.trow{display:grid;grid-template-columns:150px repeat(5,minmax(78px,1fr));gap:12px;padding:14px 20px;border-top:1px solid var(--line);min-width:560px}
+.trow span{text-align:right} .trow span:first-child{text-align:left;color:var(--body)}
+.thead{background:var(--raised);border-top:0;padding-block:12px;font-size:12px;font-weight:500;color:var(--muted)}
+.thead span:first-child{color:var(--muted)}
+.foot{margin:0;font-size:12px;color:var(--muted)}
+.own{padding:22px 24px;display:flex;flex-direction:column;gap:26px}
+.own-h{display:flex;justify-content:space-between;gap:16px;font-size:14px;margin-bottom:12px}
+.own-h b{font-weight:600} .own-h span{color:var(--muted)}
+.bar-row{display:grid;grid-template-columns:150px minmax(0,1fr) 52px 70px;align-items:center;gap:14px;font-size:14px;padding:6px 0}
+.bar-row .l{color:var(--body)} .bar-row .t{text-align:right} .bar-row .s{text-align:right;font-size:13px;color:var(--muted)}
+.track{height:8px;border-radius:4px;background:var(--line);display:flex}
+.fill{border-radius:4px;background:var(--accent);min-width:4px}
+.li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--grid);font-size:14px}
+.own-h + .li{border-top:0} .li span:first-child{color:var(--body)}
+.points{padding-top:60px}
+.points p{margin:0;padding:14px 0;border-top:1px solid var(--line);color:var(--body)}
+.notes-list{margin:0;padding:0;list-style:none}
+.notes-list li{padding:14px 0;border-top:1px solid var(--line);color:var(--body)}
+.sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
+.sources li{padding:12px 0}
+.blank{color:var(--muted);margin:0}
+
+footer{padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 24px;
+  font-size:12px;color:var(--muted)}
+
+@media (max-width:900px){
+  .hero,.fin{grid-template-columns:minmax(0,1fr)}
+  .points{padding-top:0}
+}
+@media (max-width:760px){
+  .two{grid-template-columns:minmax(0,1fr);gap:36px}
+}
+@media (max-width:600px){
+  h1{font-size:36px}
+  .price{font-size:30px}
+  .verdict{font-size:20px}
+  .seg.win{width:100%} .seg.win button{flex:1;min-width:0;padding:0}
+  .chart{padding-right:48px}
+  .yl{font-size:10px}
+  .pin{width:18px;height:18px;margin:-9px 0 0 -9px;font-size:9px;line-height:15px;box-shadow:0 0 0 2px var(--surface)}
+  .mv-body{grid-template-columns:auto minmax(0,1fr);column-gap:12px;row-gap:2px}
+  .mv-title{grid-column:1/-1}
+  .detail{padding-left:0}
+  .list{padding:2px 16px}
+  .bar-row{grid-template-columns:minmax(0,1fr) 52px 64px;row-gap:6px}
+  .bar-row .track{grid-column:1/-1;grid-row:2}
+  .sources{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <div class="bar">
+    <div class="brand"><b id="ptitle"></b> <span id="pcount"></span></div>
+    <div class="search">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="#93a0ae" stroke-width="1.6"/><path d="M12.2 12.2 L16 16" stroke="#93a0ae" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input id="q" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list" aria-label="Search stocks">
+      <ul class="results" id="results" role="listbox" aria-label="Stocks" hidden></ul>
+    </div>
+  </div>
+
+  <header class="top">
+    <div>
+      <div class="eyebrow" id="ticker"></div>
+      <h1 id="name"></h1>
+      <div class="price-row">
+        <span class="price" id="price"></span>
+        <span class="chg" id="chg"></span>
+        <span class="over" id="over"></span>
+      </div>
+    </div>
+    <div class="seg win" role="group" aria-label="Time window" id="wins"></div>
+  </header>
+
+  <p class="verdict" id="verdict"></p>
+
+  <section class="hero">
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div class="caption" id="caption"></div>
+        <button type="button" class="cmp" id="cmp" aria-pressed="false"><span class="dash"></span><span id="cmp-label"></span></button>
+      </div>
+      <div class="chart"><div class="plot" id="plot" tabindex="0" role="group" aria-label="Price chart. Use the left and right arrow keys to step through days."></div></div>
+      <div class="day" id="day" aria-live="polite"></div>
+    </div>
+    <aside class="card glance" id="glance"></aside>
+  </section>
+
+  <div class="tabs-wrap"><div class="tabs" role="tablist" aria-label="Report sections" id="tabs"></div></div>
+  <section id="panel" role="tabpanel"></section>
+
+  <footer>
+    <span id="asof"></span>
+    <span>Past prices and reported reasons only. Not investment advice.</span>
+  </footer>
+</div>
+
+<script>
+const P = __DATA__;
+const S = { stock: 0, win: 3, tab: 'key', open: null, fin: 'q', cmp: false, hi: 0, day: null };
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pct = (v, dp = 2) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(dp) + '%';
+const sign = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const CHEV = '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6 L8 10 L12 6" fill="none" stroke="#93a0ae" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+let D, M;
+
+function use(i) {
+  S.stock = i; S.open = null; S.day = null; S.swing = null; D = P.stocks[i]; M = D.meta;
+  if (!D.win[S.win]) S.win = 3;
+  if (!D.fin[S.fin] && !(S.fin === 'o' && D.own)) S.fin = D.fin.q ? 'q' : D.fin.a ? 'a' : 'o';
+  try { localStorage.setItem('stock', D.id); } catch (e) {}
+  try { history.replaceState(null, '', '#' + D.id); } catch (e) {}
+  document.title = M.name + ' · ' + P.title;
+}
+const money = v => M.cur + v.toLocaleString(M.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function moves() {
+  return D.win[S.win].moves.map((m, i) => Object.assign({}, m, { n: i + 1, note: D.notes[m.date], dir: m.chg >= 0 ? 'up' : 'down' }));
+}
+const pinClass = m => m.note ? m.dir : '';
+const titleOf = m => m.note ? esc(m.note.title) : '<span class="none-t">No clear cause found</span>';
+
+/* ---- search ---- */
+function matches(q) {
+  q = q.trim().toLowerCase();
+  return P.stocks.map((s, i) => ({ s, i })).filter(({ s }) => !q ||
+    [s.meta.name, s.id, s.isin].some(f => String(f || '').toLowerCase().includes(q)));
+}
+function showResults() {
+  const list = matches($('q').value);
+  S.hi = Math.min(S.hi, Math.max(0, list.length - 1));
+  $('results').innerHTML = list.length ? list.map(({ s, i }, k) =>
+    '<li role="option" id="opt-' + i + '" data-pick="' + i + '" aria-selected="' + (k === S.hi) + '"><span class="nm' + (i === S.stock ? ' cur' : '') + '">' +
+    esc(s.meta.name) + '</span><span class="id">' + esc(s.id) + (s.isin ? ' · ' + esc(s.isin) : '') + '</span>' +
+    (s.weight != null ? '<span class="wt">' + s.weight.toFixed(2) + '%<br>weight</span>' : '') + '</li>').join('')
+    : '<li class="empty" role="option" aria-disabled="true">No stock matches that. Try a name, ticker or ISIN.</li>';
+  $('results').hidden = false;
+  $('q').setAttribute('aria-expanded', 'true');
+  const cur = list[S.hi];
+  $('q').setAttribute('aria-activedescendant', cur ? 'opt-' + cur.i : '');
+}
+function hideResults() { $('results').hidden = true; $('q').setAttribute('aria-expanded', 'false'); }
+function pick(i) { use(i); $('q').value = ''; hideResults(); render(); window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); }
+$('q').addEventListener('focus', () => { S.hi = 0; showResults(); });
+$('q').addEventListener('input', () => { S.hi = 0; showResults(); });
+$('q').addEventListener('keydown', e => {
+  const list = matches($('q').value);
+  if (e.key === 'ArrowDown') { S.hi = Math.min(S.hi + 1, list.length - 1); showResults(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { S.hi = Math.max(S.hi - 1, 0); showResults(); e.preventDefault(); }
+  else if (e.key === 'Enter') { if (list[S.hi]) pick(list[S.hi].i); e.preventDefault(); }
+  else if (e.key === 'Escape') { hideResults(); $('q').blur(); }
+});
+document.addEventListener('mousedown', e => { if (!e.target.closest('.search')) hideResults(); });
+
+/* ---- report ---- */
+function header() {
+  const W = D.win[S.win], st = W.stats;
+  // A single-stock report has nothing to search or switch between.
+  document.querySelector('.bar').hidden = P.stocks.length < 2;
+  $('ptitle').textContent = P.title;
+  $('pcount').textContent = '· ' + P.stocks.length + ' stocks';
+  $('q').placeholder = 'Search ' + P.stocks.length + ' stocks by name, ticker or ISIN';
+  $('ticker').textContent = M.ticker + (D.isin ? ' · ' + D.isin : '');
+  $('name').textContent = M.name;
+  $('price').textContent = M.price;
+  const c = $('chg');
+  c.textContent = sign(st.chg) + '%  (' + (st.abs >= 0 ? '+' : '−') + M.cur + Math.abs(st.abs).toFixed(2) + ')';
+  c.className = 'chg ' + (st.chg >= 0 ? 'up-t' : 'down-t');
+  $('over').textContent = (/^since/.test(W.label) ? '' : 'over ') + W.label;
+  $('verdict').textContent = W.verdict || '';
+  $('verdict').hidden = !W.verdict;
+  $('wins').innerHTML = [1, 3, 6, 12].filter(w => D.win[w]).map(w =>
+    '<button type="button" data-win="' + w + '" aria-pressed="' + (w === S.win) + '">' + esc(D.win[w].chip || (w === 12 ? '1Y' : w + 'M')) + '</button>').join('');
+  $('cmp-label').textContent = 'Compare ' + M.bench;
+  $('cmp').setAttribute('aria-pressed', String(S.cmp));
+  $('asof').textContent = M.asOf;
+}
+
+function chart() {
+  const W = D.win[S.win], X = 636, ms = moves();
+  const nW = D.daily.d.length - W.start, fx = i => (i - W.start) / Math.max(nW - 1, 1) * 100;
+  const sws = W.swings || [];
+  let h = sws.map((s, k) => '<div class="band ' + (s.chg >= 0 ? 'up' : 'down') + '" id="band-' + k + '" style="left:' + fx(s.i0) + '%;width:' +
+    (fx(s.i1) - fx(s.i0)) + '%"></div>').join('');
+  h += sws.map((s, k) => '<button type="button" class="band-l ' + (s.chg >= 0 ? 'up' : 'down') + (fx(s.i0) > 70 ? ' flip' : '') + '" data-swing="' + k +
+    '" aria-pressed="false" style="left:' + (fx(s.i0) > 70 ? fx(s.i1) : fx(s.i0)) + '%" aria-label="' + (s.chg >= 0 ? 'Rise' : 'Fall') + ' of ' +
+    pct(s.chg, 1) + ', ' + esc(s.label) + ': why">' + pct(s.chg, 1) + ' · Why?</button>').join('');
+  h += W.grid.map(g => '<div class="gl" style="top:' + g.top + 'px"></div><div class="yl" style="top:' + g.top + 'px">' + esc(g.label) + '</div>').join('');
+  h += '<svg viewBox="0 0 636 250" preserveAspectRatio="none" aria-hidden="true">' +
+    '<path d="' + W.area + '" fill="#7aaede" fill-opacity="0.10"/>' +
+    '<path d="' + W.bench + '" fill="none" stroke="#6e7b8a" stroke-width="1.5" stroke-dasharray="5 4" vector-effect="non-scaling-stroke" opacity="' + (S.cmp ? 1 : 0) + '"/>' +
+    '<path d="' + W.line + '" fill="none" stroke="#7aaede" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+  h += W.xl.map((x, i) => '<div class="xl" style="left:' + (x.left / X * 100) + '%;transform:translateX(' +
+    (i === 0 ? '0' : i === W.xl.length - 1 ? '-100%' : '-50%') + ')">' + esc(x.label) + '</div>').join('');
+  h += W.pins.map((p, i) => '<button type="button" class="pin ' + pinClass(ms[i]) + '" data-pin="' + ms[i].date +
+    '" style="left:' + (p.x / X * 100) + '%;top:' + p.y + 'px" aria-label="Move ' + p.n + ', ' + esc(ms[i].label) + ', ' +
+    sign(ms[i].chg) + '%">' + p.n + '</button>').join('');
+  h += '<div class="guide" id="guide" hidden></div><div class="sdot" id="sdot" hidden></div><div class="tip" id="tip" hidden></div>';
+  $('plot').innerHTML = h;
+  caption();
+  renderDay();
+}
+
+function caption() {
+  const Y = D.daily;
+  $('caption').innerHTML = '<div class="key">' +
+    '<span><i class="k-pin"></i>Numbered pin: one day that moved more than ' + Y.floor.toFixed(1) + '% (a normal day is ' + Y.typical.toFixed(1) + '%), with a known reason.</span>' +
+    '<span><i class="k-band"></i>Shaded band: a run of days where the price rose or fell steadily, with a known reason.</span>' +
+    '<span>Click a pin or a band\'s “Why?” for the reason. Hover or tap any other day for its details.</span></div>';
+}
+
+/* ---- day details ---- */
+const fmtDay = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+const clip = (s, n) => s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : s;
+function median(a) {
+  if (!a.length) return 0;
+  a = a.slice().sort((x, y) => x - y);
+  const m = a.length >> 1;
+  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+function dayInfo(i) {
+  const Y = D.daily, W = D.win[S.win], d = Y.d[i];
+  const chg = i > 0 ? (Y.c[i] / Y.c[i - 1] - 1) * 100 : null;
+  let b = null;
+  if (i > 0 && Y.b[i] != null) {
+    let k = i - 1;
+    while (k >= 0 && Y.b[k] == null) k--;
+    if (k >= 0) b = (Y.b[i] / Y.b[k] - 1) * 100;
+  }
+  // Volume against a typical day: the median of the previous 60 sessions.
+  const med = median(Y.v.slice(Math.max(0, i - 60), i).filter(v => v > 0));
+  const k = W.moves.findIndex(m => m.date === d);
+  return {
+    i, d, c: Y.c[i], chg, b, vol: med && Y.v[i] ? Y.v[i] / med : null,
+    n: k >= 0 ? k + 1 : null, note: D.notes[d], market: Y.market[d], filings: Y.filings[d] || [], deal: Y.deals[d],
+    swing: (W.swings || []).find(s => i > s.i0 && i <= s.i1)
+  };
+}
+function place(i) {
+  const W = D.win[S.win], nW = D.daily.d.length - W.start, g = $('guide'), dot = $('sdot');
+  if (!g) return;
+  const left = (i - W.start) / Math.max(nW - 1, 1) * 100 + '%';
+  g.style.left = dot.style.left = left;
+  dot.style.top = (14 + (W.hi - D.daily.c[i]) / (W.hi - W.lo) * 222) + 'px';
+  g.hidden = dot.hidden = false;
+}
+function tip(i) {
+  const x = dayInfo(i), t = $('tip'), W = D.win[S.win], nW = D.daily.d.length - W.start;
+  const lines = [];
+  if (x.n) lines.push('<b>Pin ' + x.n + '</b>' + (x.note ? ': ' + esc(x.note.title) : ', no cause found'));
+  else if (x.note) lines.push(esc(x.note.title));
+  if (x.market) lines.push('Market: ' + esc(clip(x.market.text, 90)));
+  if (x.filings.length) lines.push(x.filings.length + ' company filing' + (x.filings.length > 1 ? 's' : ''));
+  if (x.deal) lines.push('Bulk or block deal');
+  if (x.swing) lines.push('Inside a ' + pct(x.swing.chg, 1) + ' swing, ' + esc(x.swing.label) + (x.swing.note ? ': ' + esc(x.swing.note.title) : ''));
+  t.innerHTML = '<div class="th">' + fmtDay(x.d) + '</div><div>' + money(x.c) +
+    (x.chg != null ? ' <span class="' + (x.chg >= 0 ? 'up-t' : 'down-t') + '">' + pct(x.chg) + '</span>' : '') + '</div>' +
+    '<div class="tm">' + esc(M.bench) + ' ' + (x.b == null ? 'n/a' : pct(x.b)) + (x.vol ? ' · volume ' + x.vol.toFixed(1) + '× a typical day' : '') + '</div>' +
+    (lines.length ? '<ul>' + lines.map(l => '<li>' + l + '</li>').join('') + '</ul>' : '<div class="tm">No filing, deal or researched news</div>') +
+    '<div class="hint">Click for full details</div>';
+  const f = (i - W.start) / Math.max(nW - 1, 1);
+  t.style.left = f * 100 + '%';
+  t.style.transform = f > 0.5 ? 'translateX(calc(-100% - 14px))' : 'translateX(14px)';
+  t.hidden = false;
+}
+function renderDay() {
+  const W = D.win[S.win], Y = D.daily, last = Y.d.length - 1;
+  if (S.day == null || S.day < W.start || S.day > last) S.day = last;
+  const sws = W.swings || [];
+  sws.forEach((sw, k) => {
+    const on = S.swing === k, b = $('band-' + k), l = document.querySelector('[data-swing="' + k + '"]');
+    if (b) b.classList.toggle('on', on);
+    if (l) l.setAttribute('aria-pressed', String(on));
+  });
+  if (S.swing != null && sws[S.swing]) { renderSwing(sws[S.swing]); return; }
+  const x = dayInfo(S.day);
+  place(S.day);
+  let h = '<div class="day-h"><span class="dd">' + fmtDay(x.d) + '</span><span class="dc">' + money(x.c) +
+    (x.chg != null ? ' <span class="' + (x.chg >= 0 ? 'up-t' : 'down-t') + '">' + pct(x.chg) + '</span>' : '') + '</span>' +
+    '<span class="day-nav"><button type="button" data-day="-1" aria-label="Previous day"' + (S.day <= W.start ? ' disabled' : '') + '>‹</button>' +
+    '<button type="button" data-day="1" aria-label="Next day"' + (S.day >= last ? ' disabled' : '') + '>›</button></span></div>';
+  const facts = [];
+  if (x.chg != null) {
+    const r = Math.abs(x.chg) / Y.typical;
+    facts.push(x.b == null ? 'The ' + M.bench + ' did not trade.' : 'The ' + M.bench + ' ' + (x.b >= 0 ? 'rose ' : 'fell ') + Math.abs(x.b).toFixed(2) + '%.');
+    facts.push(Math.abs(x.chg) >= Y.floor ? 'An unusually big day: a normal day moves ' + Y.typical.toFixed(1) + '%.' + (x.note ? '' : ' No cause was found for it, so it has no pin.') :
+      r < 0.5 ? 'A quiet day for this stock.' : '');
+  } else facts.push('First day in the data.');
+  if (x.vol) facts.push('Volume was ' + x.vol.toFixed(1) + '× a typical day (the median of the previous 60 sessions).');
+  h += '<p>' + facts.filter(Boolean).join(' ') + '</p>';
+  const sec = (lab, body) => '<div><div class="lab">' + lab + '</div>' + body + '</div>';
+  if (x.note) h += sec(x.n ? 'Pin ' + x.n + ': why it moved' : 'Why it moved', '<p>' + esc(x.note.detail) +
+    (x.note.src ? ' <a href="' + esc(x.note.src) + '" target="_blank" rel="noopener">' + esc(x.note.srcName || 'Source') + ' ↗</a>' : '') + '</p>');
+  else if (x.n) h += sec('Big move ' + x.n, '<p class="quiet">News coverage and exchange filings for this session were checked, and nothing explains the move.</p>');
+  if (x.market) h += sec('Market that day', '<p>' + esc(x.market.text) +
+    (x.market.url ? ' <a href="' + esc(x.market.url) + '" target="_blank" rel="noopener">Source ↗</a>' : '') + '</p>');
+  if (x.filings.length) h += sec('Company filings this session could react to', '<ul>' + x.filings.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>');
+  if (x.deal) h += sec('Bulk and block deals', '<p>' + esc(x.deal) + '</p>');
+  if (x.swing) h += sec('Part of the ' + pct(x.swing.chg, 1) + ' run, ' + esc(x.swing.label),
+    '<p>' + (x.swing.note ? esc(x.swing.note.title) + '. ' : '') + '<button type="button" class="linkish" data-swing="' + (W.swings || []).indexOf(x.swing) + '">Why the whole run moved</button></p>');
+  if (!x.note && !x.n && !x.market && !x.filings.length && !x.deal)
+    h += '<p class="quiet">No company filing, bulk deal or researched market news for this day.</p>';
+  $('day').innerHTML = h;
+}
+function renderSwing(sw) {
+  const W = D.win[S.win], Y = D.daily;
+  place(sw.i1);
+  $('day').innerHTML = '<div class="day-h"><span class="dd">' + esc(sw.label) + '</span><span class="dc ' + (sw.chg >= 0 ? 'up-t' : 'down-t') + '">' +
+    pct(sw.chg, 1) + '</span><span class="quiet">' + money(Y.c[sw.i0]) + ' → ' + money(Y.c[sw.i1]) + '</span></div>' +
+    '<div class="swb">' + swingBody(sw) + '</div>' +
+    '<button type="button" class="back" data-back>Back to day details</button>';
+}
+function swingBody(s) {
+  const n = s.note;
+  let h = n ? '<p class="sw-t">' + esc(n.title) + '</p><p>' + esc(n.detail) +
+    (n.src ? ' <a href="' + esc(n.src) + '" target="_blank" rel="noopener">' + esc(n.srcName || 'Source') + ' ↗</a>' : '') + '</p>' : '';
+  h += '<p' + (n ? ' class="sw-m"' : '') + '>' + esc(s.text) + '</p>';
+  if ((s.filings || []).length) h += '<div class="sw-f"><div class="lab">Company filings inside</div><ul>' + s.filings.map(f => '<li>' + esc(f.date) + ': ' +
+    (f.url ? '<a href="' + esc(f.url) + '" target="_blank" rel="noopener">' + esc(f.text) + '</a>' : esc(f.text)) + '</li>').join('') +
+    (s.more ? '<li class="quiet">and ' + s.more + ' more</li>' : '') + '</ul></div>';
+  return h;
+}
+function selectDay(i) {
+  const W = D.win[S.win], last = D.daily.d.length - 1;
+  S.swing = null;
+  S.day = Math.max(W.start, Math.min(last, i));
+  renderDay();
+}
+function dayAt(e) {
+  const W = D.win[S.win], r = $('plot').getBoundingClientRect(), nW = D.daily.d.length - W.start;
+  const f = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  return W.start + Math.round(f * (nW - 1));
+}
+$('plot').addEventListener('pointermove', e => {
+  if (e.pointerType === 'mouse') { const i = dayAt(e); place(i); tip(i); }
+  else if (e.buttons) selectDay(dayAt(e));
+});
+$('plot').addEventListener('pointerleave', () => { if ($('tip')) $('tip').hidden = true; place(S.day); });
+$('plot').addEventListener('click', e => { if (!e.target.closest('.pin,.band-l')) selectDay(dayAt(e)); });
+$('plot').addEventListener('keydown', e => {
+  const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+  if (step) selectDay(S.day + step);
+  else if (e.key === 'Home') selectDay(D.win[S.win].start);
+  else if (e.key === 'End') selectDay(D.daily.d.length - 1);
+  else return;
+  e.preventDefault();
+});
+
+function glance() {
+  const W = D.win[S.win], st = W.stats;
+  const rows = [
+    ['High', money(st.hi), st.hiD, ''],
+    ['Low', money(st.lo), st.loD, ''],
+    [M.bench, sign(st.bench) + '%', 'same period', ''],
+    ['Vs ' + M.bench, sign(st.vs) + ' pts', st.vs >= 0 ? 'ahead of the market' : 'behind the market', st.vs >= 0 ? 'up-t' : 'down-t']
+  ];
+  $('glance').innerHTML = '<h2>At a glance · ' + esc(W.label) + '</h2>' + rows.map(r =>
+    '<div class="kv"><span class="k">' + esc(r[0]) + '</span><span class="v"><b class="' + r[3] + '">' + esc(r[1]) +
+    '</b><small>' + esc(r[2]) + '</small></span></div>').join('');
+}
+
+function tabs() {
+  const n = D.win[S.win].moves.length;
+  $('tabs').innerHTML = [['key', 'Key points'], ['moves', 'All moves'], ['fin', 'Financials'], ['notes', 'Notes & sources']].map(([id, l]) =>
+    '<button type="button" role="tab" id="tab-' + id + '" data-tab="' + id + '" aria-selected="' + (S.tab === id) + '">' + esc(l) +
+    (id === 'moves' ? '<span class="count">' + n + '</span>' : '') + '</button>').join('');
+  $('panel').setAttribute('aria-labelledby', 'tab-' + S.tab);
+}
+
+function moveRow(m, full) {
+  const open = full && S.open === m.date;
+  let h = '<div class="mv-item" id="mv-' + m.date + '"><button type="button" class="mv" ' + (full ? 'data-toggle' : 'data-open') + '="' + m.date + '"' +
+    (full ? ' aria-expanded="' + open + '"' : '') + '><span class="mini ' + pinClass(m) + '">' + m.n + '</span><span class="mv-body"><span class="mv-date">' +
+    esc(m.label) + '</span><span class="mv-chg ' + m.dir + '-t">' + sign(m.chg) + '%</span><span class="mv-title">' + titleOf(m) + '</span></span>' +
+    (full ? CHEV : '<span></span>') + '</button>';
+  if (open) {
+    const n = m.note;
+    h += '<div class="detail"><p>' + (n ? esc(n.detail) : 'News coverage and exchange filings for this session were checked, and nothing explains the move.') +
+      '</p>' + (m.deal ? '<p class="deal">' + esc(m.deal) + '</p>' : '') +
+      '<div class="tags"><span class="tag">' + esc(M.bench) + ' ' + (m.bench == null ? 'n/a' : sign(m.bench) + '%') + '</span>' +
+      '<span class="tag">' + (m.vol || 0).toFixed(1) + '× usual volume</span>' +
+      (n && n.src ? '<a class="tag" href="' + esc(n.src) + '" target="_blank" rel="noopener">' + esc(n.srcName || 'Source') + ' ↗</a>' : '') + '</div></div>';
+  }
+  return h + '</div>';
+}
+
+function finPanel() {
+  const segs = [['q', 'Quarterly', D.fin.q], ['a', 'Annual', D.fin.a], ['o', 'Ownership', D.own]].filter(s => s[2]).map(([id, l]) =>
+    '<button type="button" data-fin="' + id + '" aria-pressed="' + (S.fin === id) + '">' + l + '</button>').join('');
+  if (!segs) return '<p class="blank">No financial tables were available for this stock.</p>';
+  let main, pts;
+  if (S.fin === 'o') {
+    const O = D.own;
+    pts = O.points;
+    main = '<div class="card own">' + O.sections.map(o => {
+      let b = '<div><div class="own-h"><b>' + esc(o.title) + '</b><span>' + esc(o.meta) + '</span></div>';
+      if (o.kind === 'bars') b += o.bars.map(r => '<div class="bar-row"><span class="l">' + esc(r.label) + '</span><span class="track"><span class="fill" style="width:' +
+        esc(r.w) + '"></span></span><span class="t">' + esc(r.text) + '</span><span class="s">' + esc(r.sub) + '</span></div>').join('');
+      if (o.kind === 'list') b += o.items.map(it => '<div class="li"><span>' + esc(it.name) + '</span><span>' + esc(it.value) + '</span></div>').join('');
+      return b + '</div>';
+    }).join('') + '</div><p class="foot">' + esc(O.foot) + '</p>';
+  } else {
+    const F = D.fin[S.fin];
+    pts = F.points;
+    const tint = (v, g) => v.charAt(0) === '−' ? 'down-t' : g ? 'up-t' : '';
+    const cols = 'grid-template-columns:150px repeat(' + F.cols.length + ',minmax(78px,1fr))';
+    main = '<div class="tscroll"><div class="trow thead" style="' + cols + '"><span></span>' + F.cols.map(c => '<span>' + esc(c) + '</span>').join('') + '</div>' +
+      F.rows.map(([l, v, g]) => '<div class="trow" style="' + cols + '"><span>' + esc(l) + '</span>' + v.map(x => '<span class="' + tint(x, g) + '">' + esc(x) + '</span>').join('') + '</div>').join('') +
+      '</div><p class="foot">' + esc(F.foot) + '</p>';
+  }
+  return '<div class="fin"><div class="fin-main"><div class="seg" role="group" aria-label="Financial view">' + segs + '</div>' + main +
+    '</div><aside class="points">' + ((pts || []).length ? '<h2 class="sec" style="font-size:22px">What stands out</h2>' + pts.map(p => '<p>' + esc(p) + '</p>').join('') : '') + '</aside></div>';
+}
+
+function panel() {
+  const ms = moves();
+  let h;
+  if (S.tab === 'key') {
+    const top = ms.slice().sort((a, b) => Math.abs(b.chg) - Math.abs(a.chg)).slice(0, 3).sort((a, b) => a.n - b.n);
+    h = '<div class="two"><div class="col"><h2 class="sec">Three things to know</h2>' + (D.things.length ? '<ol class="things">' +
+      D.things.map((t, i) => '<li><span class="n">' + (i + 1) + '</span><div><strong>' + esc(t.h) + '</strong><span>' + esc(t.b) + '</span></div></li>').join('') +
+      '</ol>' : '<p class="blank">Not written yet.</p>') + '</div><div class="col top-moves"><h2 class="sec">Biggest moves</h2>' +
+      (ms.length ? top.map(m => moveRow(m, false)).join('') + '<button type="button" class="more" data-tab="moves">' + (ms.length === 1 ? 'See it in All moves' : 'See all ' + ms.length + ' moves') + ' →</button>'
+        : '<p class="blank">No day in this window moved more than ' + D.daily.floor.toFixed(1) + '% with a known cause.</p>') + '</div></div>';
+  } else if (S.tab === 'moves') {
+    h = (ms.length ? '<div class="card list">' + ms.map(m => moveRow(m, true)).join('') + '</div>'
+        : '<p class="blank">No day in this window moved more than ' + D.daily.floor.toFixed(1) + '% with a known cause. The chart still shows every day on hover or tap.</p>');
+    const sw = D.win[S.win].swings || [];
+    if (sw.length) h += '<h2 class="sec" style="margin-top:36px">Multi-day swings</h2><p class="blank" style="margin-bottom:14px">Stretches where the price drifted a long way over several sessions without one big day.</p>' +
+      '<div class="card list">' + sw.map(s => '<div class="sw"><div class="sw-h"><b class="' + (s.chg >= 0 ? 'up-t' : 'down-t') + '">' + pct(s.chg, 1) +
+        '</b><span>' + esc(s.label) + '</span></div>' + swingBody(s) + '</div>').join('') + '</div>';
+  } else if (S.tab === 'fin') {
+    h = finPanel();
+  } else {
+    h = '<div class="two"><div class="col"><h2 class="sec">Worth knowing</h2><ul class="notes-list">' +
+      D.caveats.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul></div><div class="col"><h2 class="sec">Sources</h2><ul class="notes-list sources">' +
+      D.sources.map(s => '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a></li>').join('') + '</ul></div></div>';
+  }
+  $('panel').innerHTML = h;
+}
+
+function render() { header(); chart(); glance(); tabs(); panel(); }
+// Bring the explanation under the chart into view when it is below the fold.
+function showPanel() {
+  const r = $('day').getBoundingClientRect();
+  if (r.top > innerHeight - 120) $('day').scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+}
+
+document.addEventListener('click', e => {
+  const li = e.target.closest('[data-pick]');
+  if (li) { pick(+li.dataset.pick); return; }
+  const t = e.target.closest('button');
+  if (!t) return;
+  if (t.dataset.day) { selectDay(S.day + +t.dataset.day); return; }
+  if (t.dataset.swing != null) { S.swing = +t.dataset.swing; renderDay(); showPanel(); return; }
+  if (t.dataset.pin) { selectDay(D.daily.d.indexOf(t.dataset.pin)); showPanel(); return; }
+  if (t.hasAttribute('data-back')) { S.swing = null; renderDay(); return; }
+  if (t.dataset.win) { S.win = +t.dataset.win; S.open = null; S.swing = null; render(); }
+  else if (t.id === 'cmp') { S.cmp = !S.cmp; header(); chart(); }
+  else if (t.dataset.tab) { S.tab = t.dataset.tab; tabs(); panel(); }
+  else if (t.dataset.fin) { S.fin = t.dataset.fin; panel(); }
+  else if (t.dataset.toggle) { S.open = S.open === t.dataset.toggle ? null : t.dataset.toggle; panel(); }
+  else if (t.dataset.open) {
+    S.tab = 'moves'; S.open = t.dataset.open; tabs(); panel();
+    const di = D.daily.d.indexOf(S.open);
+    if (di >= D.win[S.win].start) selectDay(di);
+    const el = document.getElementById('mv-' + S.open);
+    if (el) el.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+  }
+});
+
+(function start() {
+  let want = (location.hash || '').slice(1);
+  if (!want) { try { want = localStorage.getItem('stock') || ''; } catch (e) {} }
+  const i = P.stocks.findIndex(s => s.id === want);
+  use(i >= 0 ? i : 0);
+  render();
+})();
+</script>

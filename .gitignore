@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.zip
+report.html
+out/
+dist/
+.env
+.env.*
+!.env.example
+stock-history/portfolios/
+portfolios/
+portfolio.html
